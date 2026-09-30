@@ -24,7 +24,7 @@ jobs:
       run: |
            if ./main | grep -q "55"; then
            echo "yes"
-           if
+           fi
 
     
 
