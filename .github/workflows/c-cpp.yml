@@ -7,6 +7,8 @@ on:
     branches: [ "main" ]
 
 jobs:
+ with:
+    submodules: recursive
   build:
 
     runs-on: ubuntu-latest
