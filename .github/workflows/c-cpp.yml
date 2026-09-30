@@ -15,10 +15,16 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: true
-    - name: pathtofolder
+    - name: Build
       run: | 
            cd ./Lab3/ 
            make clean
            make
-           ./main
+    - name: Checkout
+      run: |
+           if ./main | grep -q "55"; then
+           echo "yes"
+           if
+
+    
 
