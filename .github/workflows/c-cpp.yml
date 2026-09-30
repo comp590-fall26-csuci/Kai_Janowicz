@@ -22,9 +22,8 @@ jobs:
            make
     - name: Checkout
       run: |
-           if ./main | grep -q "55"; then
-           echo "yes"
-           fi
+           cd ./../Lab4/
+           ./Lab4Script.sh
 
     
 
