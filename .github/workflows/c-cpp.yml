@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: pathtofolder
-      run: cd ./../Lab3/ 
+      run: cd ./Lab3/ 
     - name: make clean
       run: make clean
     - name: make
