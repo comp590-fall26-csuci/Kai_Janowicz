@@ -9,7 +9,7 @@ UTEST(fib,fib10) {
 	ASSERT_EQ(2,fibonacci(3));
 	ASSERT_EQ(3,fibonacci(4));
 	ASSERT_EQ(5,fibonacci(5));
-	ASSERT_EQ(8,fibonacci(6));
+	ASSERT_EQ(0,fibonacci(6));
 	ASSERT_EQ(13,fibonacci(7));
 	ASSERT_EQ(21,fibonacci(8));
 	ASSERT_EQ(34,fibonacci(9));
