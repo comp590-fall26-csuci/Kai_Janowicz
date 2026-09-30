@@ -24,6 +24,11 @@ jobs:
       run: |
            cd ./Lab4/
            ./Lab4Script.sh
+    - name: Checkutest
+      run: |
+           cd ./Lab3/
+           make tests
+           ./run_tests
 
     
 
