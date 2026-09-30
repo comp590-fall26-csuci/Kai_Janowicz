@@ -22,7 +22,7 @@ jobs:
            make
     - name: Checkout
       run: |
-           cd ./../Lab4/
+           cd ./Lab4/
            ./Lab4Script.sh
 
     
