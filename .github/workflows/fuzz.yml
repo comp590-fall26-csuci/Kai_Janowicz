@@ -1,0 +1,22 @@
+name: Fuzz
+
+on:
+  push:
+    branches: [ "main", "Lab4", "Lab5" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build fuzz
+      run: |
+            afl-cc dvcp.c -o dvcp
+    - name: Run fuzz
+      run: |
+            mkdir inputs && echo "test" > inputs/seed.txt
+            afl-fuzz -V 120 -i input -o output ./dvcp @@
