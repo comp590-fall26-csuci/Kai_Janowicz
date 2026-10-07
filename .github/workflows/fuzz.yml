@@ -20,4 +20,4 @@ jobs:
     - name: Run fuzz
       run: |
             mkdir inputs && echo "test" > inputs/seed.txt
-            afl-fuzz -V 120 -i inputs -o output ./dvcp @@
+            afl-fuzz -V 180 -i inputs -o output ./dvcp @@
