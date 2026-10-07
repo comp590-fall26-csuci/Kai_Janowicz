@@ -2,7 +2,7 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ "main", "Lab4" ]
+    branches: [ "main", "Lab4", "Lab5" ]
   pull_request:
     branches: [ "main" ]
 
@@ -24,6 +24,28 @@ jobs:
       run: |
            cd ./Lab4/
            ./Lab4Script.sh
+    - name: Checkutest
+      run: |
+           cd ./Lab3/
+           make tests
+           ./run_tests
+  semgrep:
+    # User definable name of this GitHub Actions job.
+    name: semgrep-oss/scan
+    # If you are self-hosting, change the following `runs-on` value: 
+    runs-on: ubuntu-latest
 
+    container:
+      # A Docker image with Semgrep installed. Do not change this.
+      image: semgrep/semgrep
+
+    # Skip any PR created by dependabot to avoid permission issues:
+    if: (github.actor != 'dependabot[bot]')
+
+    steps:
+      # Fetch project source with GitHub Actions Checkout. Use either v3 or v4.
+      - uses: actions/checkout@v6
+      # Run the "semgrep scan" command on the command line of the docker image.
+      - run: semgrep scan --config auto
     
 
