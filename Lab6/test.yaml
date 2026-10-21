@@ -1,0 +1,26 @@
+- name: Local run
+  hosts: local
+  become: true
+
+  tasks: 
+   - name: Install Asciinema
+     apt: 
+      name: asciinema
+      state: present
+      update_cache: yes
+   - name: Install Apache2
+     apt:
+      name: apache2
+      state: present
+      update_cache: yes
+
+   - name: start Apache
+     service:
+      name: apache2
+      state: started
+      enabled: yes
+   - name: Show End Message
+     ansible.builtin.debug:
+      msg:
+      - "Playbook is done"
+
