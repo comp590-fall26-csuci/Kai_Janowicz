@@ -1,0 +1,107 @@
+- name: Local run
+  hosts: local 
+  become: true
+  vars_files:
+   - secret_vars.yaml
+
+  tasks:
+   - name: Install sqlite3
+     apt:
+      name: sqlite3
+      state: present
+      update_cache: yes
+
+   - name: Install Gitea binary
+     ansible.builtin.get_url:
+      url: https://dl.gitea.com/gitea/28.3.0/gitea-28.3.0-linux-arm64
+      dest: /usr/local/bin/gitea    
+      mode: '0644'
+
+   - name: Update Gitea Perms
+     ansible.builtin.shell:
+      cmd: chmod +x /usr/local/bin/gitea
+
+   - name: Add User
+     ansible.builtin.user:
+      name: git
+      system: false
+      shell: /bin/bash
+      home: /home/git
+      create_home: true
+      comment: 'Git Version Control'
+
+   - name: Create Git config for a specific user
+     community.general.git_config:
+       name: user.name
+       value: "krdkai"
+       scope: global
+     become_user: git
+
+   - name: Create email
+     community.general.git_config:
+      name: user.email
+      value: "kai.janowicz790@myci.csuci.edu"
+      scope: global
+     become_user: git
+
+   - name: Create Needed file structure
+     ansible.builtin.shell: |
+      mkdir -p /var/lib/gitea/{custom,data,log}
+      mkdir /usr/local/bin/data/
+      chown -R git:git /usr/local/bin/data
+      chown -R git:git /var/lib/gitea/
+      chmod -R 750 /usr/local/bin/data
+      chmod -R 750 /var/lib/gitea/
+      mkdir /etc/gitea
+      chown root:git /etc/gitea
+      chmod 770 /etc/gitea
+
+   - name: Install Gitea runner binary
+     ansible.builtin.get_url:
+      url: https://dl.gitea.com/gitea-runner/5.3.0/gitea-runner-5.3.0-linux-arm64
+      dest: /usr/local/bin/gitea-runner    
+      mode: '0644'
+   
+   - name: Update perms 
+     ansible.builtin.shell:
+      cmd: chmod +x /usr/local/bin/gitea-runner
+   - name: Config Gitea Working Directory
+     ansible.builtin.shell: export GITEA_WORK_DIR=/var/lib/gitea/
+
+   - name: Start Running Gitea
+     ansible.builtin.systemd_service:
+      name: gitea
+      state: started
+      enabled: true 
+     become_user: git
+   
+   - name: Add User
+     ansible.builtin.user:
+      name: gitea-runner
+      system: true
+      shell: /bin/bash
+      home: /var/lib/gitea-runner/
+      create_home: yes
+      comment: 'Git Version Control'
+   
+   - name: Create Runner File struct
+     ansible.builtin.shell: |
+      mkdir -p /etc/gitea-runner
+      /usr/local/bin/gitea-runner config init --force -c /etc/gitea-runner/config.yaml
+      /usr/local/bin/gitea-runner config -c /etc/gitea-runner/config.yaml set runner.labels ""ubuntu-latest:host""
+      /usr/local/bin/gitea-runner config -c /etc/gitea-runner/config.yaml set runner.file "/var/lib/gitea-runner/.runner"
+      chown -R gitea-runner:gitea-runner /etc/gitea-runner
+      chmod -R 750 /etc/gitea-runner/config.yaml
+      cd /var/lib/gitea-runner
+   
+   - name: Register runner
+     ansible.builtin.shell: /usr/local/bin/gitea-runner register -c /etc/gitea-runner/config.yaml --instance http://localhost:3000 --token {{runner_token}} --no-interactive
+     become_user: gitea-runner
+   - name: Start Gitea Runner
+     ansible.builtin.systemd_service:
+      name: gitea-runner
+      state: started
+      enabled: true
+      daemon_reload: true 
+     become_user: gitea-runner
+      
