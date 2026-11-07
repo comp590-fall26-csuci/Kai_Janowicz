@@ -67,7 +67,26 @@
       cmd: chmod +x /usr/local/bin/gitea-runner
    - name: Config Gitea Working Directory
      ansible.builtin.shell: export GITEA_WORK_DIR=/var/lib/gitea/
-
+   
+   - name: Create System file for gitea
+     ansible.builtin.copy:
+      dest: /etc/systemd/system/gitea.service
+      content: |
+       [Unit]
+       Description=Gitea (Git with a cup of tea)
+       After=network.target
+       [Service]
+       RestartSec=2s
+       Type=simple
+       User=git
+       Group=git
+       WorkingDirectory=/var/lib/gitea/
+       ExecStart=/usr/local/bin/gitea web --config /etc/gitea/app.ini
+       Restart=always
+       Environment=USER=git HOME=/home/git GITEA_WORK_DIR=/var/lib/gitea
+       [Install]
+       WantedBy=multi-user.target
+      mode: '0644'
    - name: Start Running Gitea
      ansible.builtin.systemd_service:
       name: gitea
@@ -75,7 +94,7 @@
       enabled: true 
      become_user: git
    
-   - name: Add User
+   - name: Add Gitea Runner User
      ansible.builtin.user:
       name: gitea-runner
       system: true
@@ -93,9 +112,38 @@
       chown -R gitea-runner:gitea-runner /etc/gitea-runner
       chmod -R 750 /etc/gitea-runner/config.yaml
       cd /var/lib/gitea-runner
-   
-   - name: Register runner
+  
+
+   - name: Add Gitea-runner System file
+     ansible.builtin.copy:
+      dest: /etc/systemd/system/gitea-runner.service
+      content: |
+       [Unit]
+       Description=Gitea Actions runner
+       Documentation=https://gitea.com/gitea/runner
+       After=network-online.target
+       Wants=network-online.target
+       [Service]
+       Type=simple
+       ExecStart=/usr/local/bin/gitea-runner daemon --config /etc/gitea-runner/config.yaml
+       WorkingDirectory=/var/lib/gitea-runner
+       User=gitea-runner
+       Group=gitea-runner
+       Restart=on-failure
+       RestartSec=5s
+       TimeoutStopSec=3h
+       [Install]
+       WantedBy=multi-user.target
+      mode: '0644'
+      
+   - name: Check for already registration 
+     ansible.builtin.stat:
+      path: /var/lib/gitea-runner
+     register: reged_runner
+
+   - name: Register runner if no .runner file
      ansible.builtin.shell: /usr/local/bin/gitea-runner register -c /etc/gitea-runner/config.yaml --instance http://localhost:3000 --token {{runner_token}} --no-interactive
+     when: not reged_runner.stat.exists
      become_user: gitea-runner
    - name: Start Gitea Runner
      ansible.builtin.systemd_service:
