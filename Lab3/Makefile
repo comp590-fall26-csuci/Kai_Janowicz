@@ -1,6 +1,9 @@
-main: ./590MakefileLab/main.c ./590MakefileLab/fibonacci.c
-	gcc ./590MakefileLab/main.c ./590MakefileLab/fibonacci.c -I./590MakefileLab/headers -o main
+main: main.c fibonacci.c
+	gcc main.c fibonacci.c -Iheaders -o main
 
 clean: 
 	rm -rf main
+
+tests: fibonacci.c
+	gcc test_fib.c fibonacci.c -Iheaders -o run_tests
 
